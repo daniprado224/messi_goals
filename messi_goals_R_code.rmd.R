@@ -14,6 +14,7 @@ numberOfCategories <- length(score_type)
 print(score_type)
 
 # Clean column from any empty row 
+library(dplyr)
 data <- data %>%
   filter(Type != "")
 
@@ -29,6 +30,7 @@ print(competitions)
 
 # Standardize competition names 
 # Change to Champions League 
+library(stringr)
 data <- data %>%
   mutate(Competition = str_replace_all(Competition, "Troph�e des Champions", "Champions League"))
 data <- data %>%
@@ -74,6 +76,15 @@ positions <- unique(data$Playing_Position)
 numberofPositions <- length(positions)
 print(positions)
 
+# Standardize positions
+data <- data %>%
+  mutate(Playing_Position = str_replace_all(Playing_Position, "SS ", "SS"))
+data <- data %>%
+  mutate(Playing_Position = str_replace_all(Playing_Position, "CF ", "CF"))
+data <- data %>%
+  mutate(Playing_Position = str_replace_all(Playing_Position, "AM ", "AM"))
+data <- data %>%
+  mutate(Playing_Position = str_replace_all(Playing_Position, "RW ", "RW"))
 # Statistics on Messi's opponents 
 opponents <- unique(data$Opponent) 
 numberofOpponents <- length(opponents)
@@ -103,10 +114,12 @@ sprintf("Since the season of 04/05 to 22/23, Messi's teams lost %d", total_losse
 names <- c("Wins", "Losses")
 values <- c(total_wins, total_losses)
 # Create the bar plot
-barplot(values, names.arg = names, col = "pink", main = "Wins vs. Losses Total", ylab = "Stats")
+barplot(values, names.arg = names, col = "pink", main = "Wins vs. Losses Total", ylab = "Stats", ylim = c(0, 650))
 
 # Add value labels on top of the bars
 text(x = 1:length(data), y = values, label = values, pos = 3, cex = 0.8, col = "red")
+
+# Get stats per club  ------------------------------------------------------------
 
 # Divide these wins and losses by the competition played 
 total_liga <- subset(data, Competition == "La Liga")
@@ -117,7 +130,7 @@ total_world_cup <- subset(data, Competition == "FIFA Club World Cup")
 total_uefa_supercup <- subset(data, Competition == "UEFA Super Cup")
 total_ligue1 <- subset(data, Competition == "Ligue 1")
 
-# Define the names of the values
+# Define the names of the values for La Liga 
 total_wins_liga <- sum(as.numeric(total_liga$club_wins), na.rm = TRUE)
 total_losses_liga <- length(total_liga$club_wins) - total_wins_liga
 names <- c("Wins", "Losses")
@@ -128,16 +141,16 @@ barplot(values, names.arg = names, col = "blue", main = "Wins vs. Losses Liga", 
 # Add value labels on top of the bars
 text(x = 1:length(total_liga), y = values, label = values, pos = 3, cex = 0.8, col = "red")
 
-# Define the names of the values
+# Define the names of the values for Champions League 
 total_wins_champions <- sum(as.numeric(total_champions$club_wins), na.rm = TRUE)
 total_losses_champions <- length(total_champions$club_wins) - total_wins_champions
 names <- c("Wins", "Losses")
 values <- c(total_wins_champions, total_losses_champions)
 # Create the bar plot
-barplot(values, names.arg = names, col = "green", main = "Wins vs. Losses Champions", ylab = "Stats")
+barplot(values, names.arg = names, col = "green", main = "Wins vs. Losses Champions", ylab = "Stats",ylim=c(0,130) )
 
 # Add value labels on top of the bars
-text(x = 1:length(data), y = values, label = values, pos = 3, cex = 0.8, col = "red")
+text(x = 1:length(total_champions), y = values, label = values, pos = 3, cex = 0.8, col = "red")
 
 # Define the names of the values
 total_wins_copa_rey <- sum(as.numeric(total_copa_rey$club_wins), na.rm = TRUE)
@@ -145,10 +158,10 @@ total_losses_copa_rey <- length(total_copa_rey$club_wins) - total_wins_copa_rey
 names <- c("Wins", "Losses")
 values <- c(total_wins_copa_rey, total_losses_copa_rey)
 # Create the bar plot
-barplot(values, names.arg = names, col = "yellow", main = "Wins vs. Losses Copa Rey", ylab = "Stats")
+barplot(values, names.arg = names, col = "yellow", main = "Wins vs. Losses Copa Rey", ylab = "Stats", ylim=c(0,60))
 
 # Add value labels on top of the bars
-text(x = 1:length(data), y = values, label = values, pos = 3, cex = 0.8, col = "red")
+text(x = 1:length(total_copa_rey), y = values, label = values, pos = 3, cex = 0.8, col = "red")
 
 # Define the names of the values
 total_wins_supercopa <- sum(as.numeric(total_supercopa$club_wins), na.rm = TRUE)
@@ -157,10 +170,10 @@ names <- c("Wins", "Losses")
 print(length(total_supercopa))
 values <- c(total_wins_supercopa, total_losses_supercopa)
 # Create the bar plot
-barplot(values, names.arg = names, col = "orange", main = "Wins vs. Losses Supercopa", ylab = "Stats")
+barplot(values, names.arg = names, col = "orange", main = "Wins vs. Losses Supercopa", ylab = "Stats", ylim=c(0,15))
 
 # Add value labels on top of the bars
-text(x = 1:length(data), y = length(total_supercopa), label = values, pos = 3, cex = 0.8, col = "red")
+text(x = 1:length(total_supercopa), y = values, label = values, pos = 3, cex = 0.8, col = "red")
 
 # Define the names of the values
 total_wins_world_cup <- sum(as.numeric(total_world_cup$club_wins), na.rm = TRUE)
@@ -168,10 +181,10 @@ total_losses_world_cup <- length(total_world_cup$club_wins) - total_wins_world_c
 names <- c("Wins", "Losses")
 values <- c(total_wins_world_cup, total_losses_world_cup)
 # Create the bar plot
-barplot(values, names.arg = names, col = "grey", main = "Wins vs. Losses World Cup", ylab = "Stats")
+barplot(values, names.arg = names, col = "grey", main = "Wins vs. Losses World Cup", ylab = "Stats", ylim = c(0, 8))
 
 # Add value labels on top of the bars
-text(x = 1:length(data), y = values, label = values, pos = 3, cex = 0.8, col = "red")
+text(x = 1:length(total_world_cup), y = values, label = values, pos = 3, cex = 0.8, col = "red")
 
 # Define the names of the values
 total_wins_uefa_supercup<- sum(as.numeric(total_uefa_supercup$club_wins), na.rm = TRUE)
@@ -179,10 +192,10 @@ total_losses_uefa_supercup<- length(total_uefa_supercup$club_wins) - total_wins_
 names <- c("Wins", "Losses")
 values <- c(total_wins_uefa_supercup, total_losses_uefa_supercup)
 # Create the bar plot
-barplot(values, names.arg = names, col = "purple", main = "Wins vs. Losses Supercup", ylab = "Stats")
+barplot(values, names.arg = names, col = "purple", main = "Wins vs. Losses Supercup", ylab = "Stats", ylim = c(0, 5))
 
 # Add value labels on top of the bars
-text(x = 1:length(data), y = values, label = values, pos = 3, cex = 0.8, col = "red")
+text(x = 1:length(total_uefa_supercup), y = values, label = values, pos = 3, cex = 0.8, col = "red")
 
 # Define the names of the values
 total_wins_ligue1 <- sum(as.numeric(total_ligue1$club_wins), na.rm = TRUE)
@@ -190,8 +203,84 @@ total_losses_ligue1 <- length(total_ligue1$club_wins) - total_wins_ligue1
 names <- c("Wins", "Losses")
 values <- c(total_wins_ligue1, total_losses_ligue1)
 # Create the bar plot
-barplot(values, names.arg = names, col = "cyan", main = "Wins vs. Losses Ligue 1", ylab = "Stats")
+barplot(values, names.arg = names, col = "cyan", main = "Wins vs. Losses Ligue 1", ylab = "Stats", ylim = c(0, 25))
 
 # Add value labels on top of the bars
-text(x = 1:length(data), y = values, label = values, pos = 3, cex = 0.8, col = "red")
+text(x = 1:length(total_ligue1), y = values, label = values, pos = 3, cex = 0.8, col = "red")
+
+
+# Get stats per position played  ------------------------------------------------------------
+
+# Total games played as AM
+total_am_games <- sum(data$Playing_Position == "AM", na.rm = TRUE)
+# Total club wins when playing as AM
+total_am_wins <- sum(data$club_wins[data$Playing_Position == "AM"], na.rm = TRUE)
+total_am_losses <- total_am_games - total_am_wins 
+
+# Total games played as CF
+total_cf_games <- sum(data$Playing_Position == "CF", na.rm = TRUE)
+# Total club wins when playing as CF
+total_cf_wins <- sum(data$club_wins[data$Playing_Position == "CF"], na.rm = TRUE)
+total_cf_losses <- total_cf_games - total_cf_wins 
+
+# Total games played as RW
+total_rw_games <- sum(data$Playing_Position == "RW", na.rm = TRUE)
+# Total club wins when playing as RW
+total_rw_wins <- sum(data$club_wins[data$Playing_Position == "RW"], na.rm = TRUE)
+total_rw_losses <- total_rw_games - total_rw_wins 
+
+# Total games played as SS
+total_ss_games <- sum(data$Playing_Position == "SS", na.rm = TRUE)
+# Total club wins when playing as SS
+total_ss_wins <- sum(data$club_wins[data$Playing_Position == "SS"], na.rm = TRUE)
+total_ss_losses <- total_ss_games - total_ss_wins 
+
+# Total games played as LW
+total_lw_games <- sum(data$Playing_Position == "LW", na.rm = TRUE)
+# Total club wins when playing as LW
+total_lw_wins <- sum(data$club_wins[data$Playing_Position == "LW"], na.rm = TRUE)
+total_lw_losses <- total_lw_games - total_lw_wins 
+
+# Calculate total wins and losses for each playing position
+total_games <- c(total_am_games, total_cf_games, total_rw_games, total_ss_games, total_lw_games)
+total_wins <- c(total_am_wins, total_cf_wins, total_rw_wins, total_ss_wins, total_lw_wins)
+positions <- c("AM", "CF", "RW", "SS", "LW")
+# Calculate losses for each position
+total_losses <- total_games - total_wins
+
+
+
+# Fit Poisson regression model to see significsance between playing position and club wins
+model_poisson <- glm(club_wins ~ Playing_Position, data = data, family = poisson)
+
+# Summary of the model
+summary(model_poisson)
+
+# Extract coefficients and standard errors
+coef_data <- coef(model_poisson)[-1]  # Exclude intercept
+se_data <- summary(model_poisson)$coefficients[-1, "Std. Error"]  # Standard errors
+
+# Data frame for coefficients and standard errors
+coef_data <- data.frame(
+  position = names(coef_data),
+  coef = coef_data,
+  se = se_data
+)
+
+# Calculate confidence intervals 
+coef_data$lower <- coef_data$coef - 1.96 * coef_data$se
+coef_data$upper <- coef_data$coef + 1.96 * coef_data$se
+
+# Plot coefficients with confidence intervals
+library(ggplot2)
+
+ggplot(coef_data, aes(x = position, y = coef, ymin = lower, ymax = upper)) +
+  geom_pointrange(color = "navy") +
+  labs(title = "Estimated Coefficients of Playing Position on Club Wins",
+       x = "Playing Position",
+       y = "Coefficient (Expected Change in Club Wins)") +
+  theme_minimal()
+cat("Coefficients and 95% Confidence Intervals:\n")
+print(coef_data)
+
 
