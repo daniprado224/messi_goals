@@ -283,4 +283,50 @@ ggplot(coef_data, aes(x = position, y = coef, ymin = lower, ymax = upper)) +
 cat("Coefficients and 95% Confidence Intervals:\n")
 print(coef_data)
 
+# Create a new dataframe with just the "Goals_Scored" column
+season_goals <- data.frame(Season = unique(data$Season))
+season_goals$Goals <- NA
+season_goals<- subset(season_goals, select = -Goals)
+# View the new dataframe
+print(season_goals)
 
+# Variable intitialization 
+current_season <- data$Season[1]
+total_goals <- 0
+
+# Step 2: Loop through the dataframe
+for (i in 1:nrow(data)) {
+  if (data$Season[i] == current_season) {
+    # Accumulate goals for the current season
+    total_goals <- total_goals + 1 
+  } else {
+    # Add the accumulated goals to the season_goals dataframe
+    season_goals$Total_Goals[season_goals$Season == current_season] <- total_goals
+    
+    
+    # Update to the new season and reset the goals count
+    current_season <- data$Season[i]
+    total_goals <- 1
+  }
+}
+
+season_goals$Total_Goals[season_goals$Season == current_season] <- total_goals
+# Checking work 
+# season_counts <- table(data$Season)
+# print(season_counts)
+
+ggplot(season_goals, aes(x = Season, y = Total_Goals)) +
+  geom_line(group = 1, color = "blue") +  # Draw the line
+  geom_point(color = "red") +             # Add points
+  labs(title = "Goals per Season", 
+       x = "Season", 
+       y = "Total Goals") +
+  theme_minimal() +                       # Apply a minimal theme
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Load the knitr library
+library(knitr)
+
+# Create the table
+kable(season_goals, col.names = c("Season", "Total Goals"), 
+      caption = "Total Goals Scored per Season by Lionel Messi")
