@@ -241,14 +241,28 @@ total_lw_games <- sum(data$Playing_Position == "LW", na.rm = TRUE)
 total_lw_wins <- sum(data$club_wins[data$Playing_Position == "LW"], na.rm = TRUE)
 total_lw_losses <- total_lw_games - total_lw_wins 
 
+# goals per position 
+positions_played <- data.frame(Playing_Position = unique(data$Playing_Position))
+positions_played$Goal_totals <- NA
+positions_played$Goal_totals[positions_played$Playing_Position == "LW"] <- total_lw_games
+positions_played$Goal_totals[positions_played$Playing_Position == "AM"] <- total_am_games
+positions_played$Goal_totals[positions_played$Playing_Position == "SS"] <- total_ss_games
+positions_played$Goal_totals[positions_played$Playing_Position == "CF"] <- total_cf_games
+positions_played$Goal_totals[positions_played$Playing_Position == "RW"] <- total_rw_games
+
+#plot total goals an position played 
+ggplot(positions_played, aes(x = "", y = Goal_totals, fill = Playing_Position)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y", start = 0) +
+  labs(title = "Goals Scored by Position")
+
+
 # Calculate total wins and losses for each playing position
 total_games <- c(total_am_games, total_cf_games, total_rw_games, total_ss_games, total_lw_games)
 total_wins <- c(total_am_wins, total_cf_wins, total_rw_wins, total_ss_wins, total_lw_wins)
 positions <- c("AM", "CF", "RW", "SS", "LW")
 # Calculate losses for each position
 total_losses <- total_games - total_wins
-
-
 
 # Fit Poisson regression model to see significsance between playing position and club wins
 model_poisson <- glm(club_wins ~ Playing_Position, data = data, family = poisson)
@@ -283,6 +297,9 @@ ggplot(coef_data, aes(x = position, y = coef, ymin = lower, ymax = upper)) +
 cat("Coefficients and 95% Confidence Intervals:\n")
 print(coef_data)
 
+# goals per position 
+
+
 # Create a new dataframe with just the "Goals_Scored" column
 season_goals <- data.frame(Season = unique(data$Season))
 season_goals$Goals <- NA
@@ -316,8 +333,8 @@ season_goals$Total_Goals[season_goals$Season == current_season] <- total_goals
 # print(season_counts)
 
 ggplot(season_goals, aes(x = Season, y = Total_Goals)) +
-  geom_line(group = 1, color = "blue") +  # Draw the line
-  geom_point(color = "red") +             # Add points
+  geom_line(group = 1, color = "blue") +  # draw line
+  geom_point(color = "red") +             # points
   labs(title = "Goals per Season", 
        x = "Season", 
        y = "Total Goals") +
@@ -325,8 +342,7 @@ ggplot(season_goals, aes(x = Season, y = Total_Goals)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # Load the knitr library
-library(knitr)
-
-# Create the table
+library(knitr) 
 kable(season_goals, col.names = c("Season", "Total Goals"), 
       caption = "Total Goals Scored per Season by Lionel Messi")
+
