@@ -85,6 +85,7 @@ data <- data %>%
   mutate(Playing_Position = str_replace_all(Playing_Position, "AM ", "AM"))
 data <- data %>%
   mutate(Playing_Position = str_replace_all(Playing_Position, "RW ", "RW"))
+
 # Statistics on Messi's opponents 
 opponents <- unique(data$Opponent) 
 numberofOpponents <- length(opponents)
@@ -101,6 +102,9 @@ data <- data %>%
 
 # If the goal did not have someone assist, write none 
 data$Goal_assist <- ifelse(data$Goal_assist == "", "None", data$Goal_assist)
+
+# Condense data! add a new column called "messi_scores" if a row has the same date as the one above, amount of scores increases
+
 
 # Extracting data ---------------------------------------------------------
 
@@ -250,6 +254,7 @@ positions_played$Goal_totals[positions_played$Playing_Position == "SS"] <- total
 positions_played$Goal_totals[positions_played$Playing_Position == "CF"] <- total_cf_games
 positions_played$Goal_totals[positions_played$Playing_Position == "RW"] <- total_rw_games
 
+library(ggplot2)
 #plot total goals an position played 
 ggplot(positions_played, aes(x = "", y = Goal_totals, fill = Playing_Position)) +
   geom_bar(stat = "identity", width = 1) +
@@ -299,8 +304,9 @@ print(coef_data)
 
 # goals per position 
 
-
+# Get stats per season played  ------------------------------------------------------------
 # Create a new dataframe with just the "Goals_Scored" column
+
 season_goals <- data.frame(Season = unique(data$Season))
 season_goals$Goals <- NA
 season_goals<- subset(season_goals, select = -Goals)
@@ -343,6 +349,48 @@ ggplot(season_goals, aes(x = Season, y = Total_Goals)) +
 
 # Load the knitr library
 library(knitr) 
-kable(season_goals, col.names = c("Season", "Total Goals"), 
-      caption = "Total Goals Scored per Season by Lionel Messi")
+kable(season_goals, col.names = c("Game", "Total Goals"), 
+      caption = "Total Goals Scored per Game by Lionel Messi")
+
+# Get goals per match played   ------------------------------------------------------------
+# Look at his stats of goals per game 
+game_goals <- data.frame(Date = unique(data$Date))
+# View the new dataframe
+print(game_goals)
+
+# Variable intitialization 
+current_game <- game_goals$Date[1]
+total_goals_games <- 0
+rival <- data$Opponent[1]
+
+# Step 2: Loop through the dataframe
+for (i in 1:nrow(data)) {
+  if (data$Date[i] == current_game) {
+    # Accumulate goals for the current season
+    total_goals_games <- total_goals_games + 1 
+    rival <- data$Opponent[i]
+  } else {
+    # Add the accumulated goals to the season_goals dataframe
+    game_goals$Total_Goals[game_goals$Date == current_game] <- total_goals_games
+    game_goals$Rival[game_goals$Date == current_game] <- rival 
+    
+    # Update to the new season and reset the goals count
+    current_game <- data$Date[i]
+    total_goals_games <- 1
+  }
+}
+
+game_goals$Total_Goals[game_goals$Date == current_game] <- total_goals_games
+
+# Find top 10 matches were Messi scored the greatest amount of goals 
+top_matches <- game_goals %>%
+  arrange(desc(Total_Goals)) %>%
+  head(10)
+
+# Plot top 10 matches where Messi scored the most with the date and team he played against 
+ggplot(top_matches, aes(x = Date, y = Total_Goals, label = Rival)) +
+  geom_bar(stat = 'identity', fill = 'skyblue') +
+  geom_text(aes(label = Rival), vjust = -0.3, color = 'black', size = 3.5) +
+  labs(title = 'Goals Scored per Match', x = 'Date', y = 'Goals Scored') +
+  theme_minimal()
 
